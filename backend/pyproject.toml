@@ -8,6 +8,7 @@ authors = ["EmmetMack <emmet.mack10@gmail.com>"]
 python = "^3.10"
 starlite = "^1.49.0"
 uvicorn = "^0.20.0"
+SQLAlchemy = {version = "^2.0.0b1", allow-prereleases = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
