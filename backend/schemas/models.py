@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Column, DateTime, Integer, String, select
+from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy.sql import func
 from datetime import datetime
 from starlite import DTOFactory
 from starlite.plugins.sql_alchemy import SQLAlchemyPlugin
@@ -14,6 +15,6 @@ class Habit(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
-    creation_ts: Mapped[datetime] = mapped_column(DateTime)
+    creation_ts: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
-CreateHabitDTO = SQLAlchemyDTOFactory("CreateHabitDTO", Habit, exclude=['id'])
+CreateHabitDTO = SQLAlchemyDTOFactory("CreateHabitDTO", Habit, exclude=['id', 'creation_ts'])

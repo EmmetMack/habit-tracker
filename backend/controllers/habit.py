@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from schemas.models import CreateHabitDTO, Habit
 from pydantic import UUID4
+from datetime import datetime
 
 
 class HabitController(Controller):
