@@ -14,9 +14,14 @@ async def on_startup() -> None:
     async with sqlalchemy_config.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+async def on_shutdown() -> None:
+    """Close the DB"""
+    sqlalchemy_config.engine.close()
+
 app = Starlite(
     route_handlers=[HabitController],
     on_startup = [on_startup],
+    on_shutdown=[on_shutdown],
     plugins=[sqlalchemy_plugin],
     openapi_config=OpenAPIConfig(title="Habit API", version="1.0.0")
 )
