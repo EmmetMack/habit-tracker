@@ -1,8 +1,9 @@
 from starlite import Controller, Partial, get, post, put, patch, delete, HTTPException
 from starlite.status_codes import HTTP_404_NOT_FOUND
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, all_
-from schemas.models import CreateHabitDTO, Habit
+from sqlalchemy import select, update
+from schemas.models import CreateHabitDTO, Habit, PartialHabitDTO, UpdateHabitDTO
+import json
 from pydantic import UUID4
 from datetime import datetime
 
@@ -27,15 +28,30 @@ class HabitController(Controller):
             raise HTTPException(detail=f'No habits created', status_code=HTTP_404_NOT_FOUND)
         return habits
 
-    # @patch(path="/{habit_id:uuid}")
-    # async def partial_update_habit(self, habit_id: UUID4, data: Partial[Habit]) -> Habit:
-    #     #make DB call to partially update habit
-    #     return
+    @patch(path="/{habit_id:int}")
+    async def partial_update_habit(self, habit_id: int, data: PartialHabitDTO, async_session:AsyncSession) -> Habit:
+        #make DB call to partially update habit
+        new_habit_data = data.to_model_instance()
+        print(f"DATA dictionary: {new_habit_data.__dict__()}")
+        result = await async_session.execute(
+            update(Habit).where(Habit.id==habit_id).values(json.dumps(new_habit_data.__dict__()))
+        )
+        updated_habit: Habit | None = result.one_or_none()
+        if not updated_habit:
+            raise HTTPException(detail=f"No habit with id: {habit_id} found, update could not be completed", status_code=HTTP_404_NOT_FOUND) 
+        return updated_habit
 
-    # @put(path="{habit_id:uuid}")
-    # async def update_user(self, habit_id: UUID4, data: Habit) -> Habit:
-    #     #make DB call to completely update a habit
-    #     return
+    @put(path="{habit_id:int}")
+    async def update_user(self, habit_id: int, data: UpdateHabitDTO, async_session: AsyncSession) -> Habit:
+        #make DB call to completely update a habit
+        updated_habit_data = data.to_model_instance()
+        result = await async_session.execute(
+            update(Habit).where(Habit.id==habit_id).values(updated_habit_data)
+        )
+        updated_habit: Habit | None = result.one_or_none()
+        if not updated_habit:
+            raise HTTPException(detail=f'No habit with id: {habit_id} found and thus not updated', status_code=HTTP_404_NOT_FOUND)
+        return updated_habit
 
     @get(path='/{habit_id:int}')
     async def get_habit(self, habit_id: int, async_session: AsyncSession) -> Habit:

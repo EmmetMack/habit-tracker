@@ -4,6 +4,7 @@ from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.sql import func
 from datetime import datetime
 from starlite import DTOFactory
+from starlite.types.partial import Partial
 from starlite.plugins.sql_alchemy import SQLAlchemyPlugin
 
 Base = declarative_base()
@@ -18,3 +19,5 @@ class Habit(Base):
     creation_ts: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
 CreateHabitDTO = SQLAlchemyDTOFactory("CreateHabitDTO", Habit, exclude=['id', 'creation_ts'])
+UpdateHabitDTO = SQLAlchemyDTOFactory("UpdateHabitDTO", Habit, exclude=["id"])
+PartialHabitDTO = Partial[UpdateHabitDTO]
