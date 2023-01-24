@@ -30,28 +30,38 @@ class HabitController(Controller):
 
     @patch(path="/{habit_id:int}")
     async def partial_update_habit(self, habit_id: int, data: PartialHabitDTO, async_session:AsyncSession) -> Habit:
-        #make DB call to partially update habit
-        new_habit_data = data.to_model_instance()
-        print(f"DATA dictionary: {new_habit_data.__dict__()}")
-        result = await async_session.execute(
-            update(Habit).where(Habit.id==habit_id).values(json.dumps(new_habit_data.__dict__()))
-        )
-        updated_habit: Habit | None = result.one_or_none()
-        if not updated_habit:
-            raise HTTPException(detail=f"No habit with id: {habit_id} found, update could not be completed", status_code=HTTP_404_NOT_FOUND) 
-        return updated_habit
+        #make DB call to completely update a habit
+        result = await async_session.scalars(select(Habit).where(Habit.id == habit_id)) #TODO make helper func
+        current_habit: Habit | None = result.one_or_none()
+
+        if not current_habit:
+            raise HTTPException(detail=f'Habit with ID {habit_id} not found', status_code=HTTP_404_NOT_FOUND)
+        
+        for key, value in data.dict().items():
+            if value:
+                setattr(current_habit, key, value) 
+        async_session.add(current_habit)
+        await async_session.commit()
+        return current_habit
 
     @put(path="{habit_id:int}")
-    async def update_user(self, habit_id: int, data: UpdateHabitDTO, async_session: AsyncSession) -> Habit:
+    async def update_habit(self, habit_id: int, data: UpdateHabitDTO, async_session: AsyncSession) -> Habit:
+        #make DB call to completely update a habit or create it if it doesn't exist
         #make DB call to completely update a habit
-        updated_habit_data = data.to_model_instance()
-        result = await async_session.execute(
-            update(Habit).where(Habit.id==habit_id).values(updated_habit_data)
-        )
-        updated_habit: Habit | None = result.one_or_none()
-        if not updated_habit:
-            raise HTTPException(detail=f'No habit with id: {habit_id} found and thus not updated', status_code=HTTP_404_NOT_FOUND)
-        return updated_habit
+        result = await async_session.scalars(select(Habit).where(Habit.id == habit_id)) #TODO make helper func
+        current_habit: Habit | None = result.one_or_none()
+
+        if not current_habit:
+            raise HTTPException(detail=f'Habit with ID {habit_id} not found', status_code=HTTP_404_NOT_FOUND)
+        
+        for key, value in data.dict().items():
+            if value:
+                setattr(current_habit, key, value)
+                 
+        async_session.add(current_habit)
+        await async_session.commit()
+        return current_habit
+        
 
     @get(path='/{habit_id:int}')
     async def get_habit(self, habit_id: int, async_session: AsyncSession) -> Habit:

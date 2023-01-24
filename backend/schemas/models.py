@@ -19,5 +19,5 @@ class Habit(Base):
     creation_ts: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
 CreateHabitDTO = SQLAlchemyDTOFactory("CreateHabitDTO", Habit, exclude=['id', 'creation_ts'])
-UpdateHabitDTO = SQLAlchemyDTOFactory("UpdateHabitDTO", Habit, exclude=["id"])
+UpdateHabitDTO = SQLAlchemyDTOFactory("UpdateHabitDTO", Habit, exclude=["id", "creation_ts"])
 PartialHabitDTO = Partial[UpdateHabitDTO]
