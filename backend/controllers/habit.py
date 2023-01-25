@@ -32,9 +32,8 @@ class HabitController(Controller):
     @patch(path="/{habit_id:int}")
     async def partial_update_habit(self, habit_id: int, data: PartialHabitDTO, async_session:AsyncSession) -> Habit:
         #make DB call to completely update a habit
-        result = await self._get_habit(habit_id, async_session)
-        current_habit: Habit = result.one_or_none()
-
+        current_habit: Habit = await self._get_habit(habit_id, async_session)
+    
         for key, value in data.dict().items():
             if value:
                 setattr(current_habit, key, value) 
