@@ -1,3 +1,4 @@
+from typing import Any
 from starlite import Controller, Partial, get, post, put, patch, delete, HTTPException
 from starlite.status_codes import HTTP_404_NOT_FOUND
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,12 +32,9 @@ class HabitController(Controller):
     @patch(path="/{habit_id:int}")
     async def partial_update_habit(self, habit_id: int, data: PartialHabitDTO, async_session:AsyncSession) -> Habit:
         #make DB call to completely update a habit
-        result = await async_session.scalars(select(Habit).where(Habit.id == habit_id)) #TODO make helper func
-        current_habit: Habit | None = result.one_or_none()
+        result = await self._get_habit(habit_id, async_session)
+        current_habit: Habit = result.one_or_none()
 
-        if not current_habit:
-            raise HTTPException(detail=f'Habit with ID {habit_id} not found', status_code=HTTP_404_NOT_FOUND)
-        
         for key, value in data.dict().items():
             if value:
                 setattr(current_habit, key, value) 
@@ -47,16 +45,15 @@ class HabitController(Controller):
     @put(path="{habit_id:int}")
     async def update_habit(self, habit_id: int, data: UpdateHabitDTO, async_session: AsyncSession) -> Habit:
         #make DB call to completely update a habit or create it if it doesn't exist
-        #make DB call to completely update a habit
-        result = await async_session.scalars(select(Habit).where(Habit.id == habit_id)) #TODO make helper func
-        current_habit: Habit | None = result.one_or_none()
-
-        if not current_habit:
-            raise HTTPException(detail=f'Habit with ID {habit_id} not found', status_code=HTTP_404_NOT_FOUND)
         
-        for key, value in data.dict().items():
-            if value:
-                setattr(current_habit, key, value)
+        try: #if already exists then update fields
+            current_habit = await self._get_habit(habit_id, async_session)
+            for key, value in data.dict().items():
+                if value:
+                    setattr(current_habit, key, value) 
+        except HTTPException: #if it doesn't exist then create a new habit with the id
+            current_habit: Habit = data.to_model_instance()
+            current_habit.id = habit_id
                  
         async_session.add(current_habit)
         await async_session.commit()
@@ -66,13 +63,24 @@ class HabitController(Controller):
     @get(path='/{habit_id:int}')
     async def get_habit(self, habit_id: int, async_session: AsyncSession) -> Habit:
         #make DB call to get a habit
-        result = await async_session.scalars(select(Habit).where(Habit.id == habit_id))
+        habit = await self._get_habit(habit_id, async_session)
+        
+        return habit
+
+    @delete(path='/{habit_id:int}')
+    async def delete_habit(self, habit_id:int, async_session: AsyncSession) -> None:
+        #delete habit from db
+        habit = await self._get_habit(habit_id, async_session)
+        await async_session.delete(habit)
+        await async_session.commit()
+        return
+
+    async def _get_habit(self, habit_id: int, async_session: AsyncSession) -> Habit:
+        #helper function to make the query to get a habit
+        result = await async_session.scalars(select(Habit).where(Habit.id==habit_id))
+
         habit: Habit | None = result.one_or_none()
         if not habit:
             raise HTTPException(detail=f'Habit with ID {habit_id} not found', status_code=HTTP_404_NOT_FOUND)
-        return habit
 
-    # @delete(path='/{habit_id:uuid}')
-    # async def delete_habit(self, user_id:UUID4) -> None:
-    #     #delete habit from db
-    #     return 
+        return habit
