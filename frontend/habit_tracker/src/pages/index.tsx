@@ -1,12 +1,23 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from '@/styles/Home.module.css'
-import Habit from '../components/habit'
+import Head from 'next/head';
+import Image from 'next/image';
+import { Inter } from '@next/font/google';
+import styles from '@/styles/Home.module.css';
+import Habit from '../components/habit';
+import {getHabitsData} from '../libs/habits';
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+export async function getStaticProps() { 
+  const allHabitsData = await getHabitsData();
+  return {
+    props: {
+      allHabitsData,
+    },
+  }
+
+}
+
+export default function Home({allHabitsData}) {
   return (
     <>
       <Head>
@@ -16,7 +27,15 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <Habit name="meditate" description="test" frequency="1" />
+        <h2>Habits:</h2>
+        <ul>
+          {allHabitsData.map(({id, name, description, frequency}) => (
+            <li key={id}>
+              <Habit name={name} description={description} frequency={frequency}/>
+            </li>
+          ))}
+         
+        </ul>
       </main>
     </>
   )
