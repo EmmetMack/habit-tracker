@@ -4,6 +4,7 @@ import { Inter } from '@next/font/google';
 import styles from '@/styles/Home.module.css';
 import Habit from '../components/habit';
 import {getHabitsData} from '../libs/habits';
+import HabitForm from '../components/habitForm';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -36,6 +37,7 @@ export default function Home({allHabitsData}) {
           ))}
          
         </ul>
+        <HabitForm />
       </main>
     </>
   )
