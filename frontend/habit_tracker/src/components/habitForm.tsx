@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {createHabit} from '../libs/habits';
 
 
 export default function HabitForm() {
@@ -7,9 +8,23 @@ export default function HabitForm() {
     const [frequency, setFrequency] = useState("");
 
 
-    function handleSubmit(e) {
-        alert(`Submitted lol ${name} ${description} ${frequency}`);
-        //call function from libs that submits via the API
+    async function handleSubmit(e) {
+        e.preventDefault();
+        let frequencyNum: int = 1
+        if (frequency ==="weekly") {
+            frequencyNum = 2;
+        }
+        else if (frequency === "monthly") {
+            frequencyNum = 3;
+        }
+        const habitData : json = {
+            name: name,
+            description: description,
+            frequency: frequencyNum
+        };
+        console.log(habitData);
+        const habit = await createHabit(habitData);
+        console.log(habit);
     }
 
     return(
