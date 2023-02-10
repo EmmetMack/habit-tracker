@@ -16,8 +16,11 @@ class HabitController(Controller):
     async def create_habit(self, data: CreateHabitDTO, async_session: AsyncSession) -> Habit:
         #make DB call to create a habit
         habit: Habit = data.to_model_instance()
-        async_session.add(habit)
-        await async_session.commit()
+        if len(habit.name) > 0 and len(habit.description) > 0:
+            async_session.add(habit)
+            await async_session.commit()
+        else:
+            raise HTTPException(detail=f'Cannot create a habit without populating name and/or description', status_code=400)
         return habit
 
     @get()
