@@ -27,11 +27,11 @@ export default function Home({allHabitsData}) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
+      <main className="columns-2">
         <h2>Habits:</h2>
-        <ul>
+        <ul className="">
           {allHabitsData.map(({id, name, description, frequency}) => (
-            <li key={id}>
+            <li className = "p-4"key={id}>
               <Habit name={name} description={description} frequency={frequency}/>
             </li>
           ))}

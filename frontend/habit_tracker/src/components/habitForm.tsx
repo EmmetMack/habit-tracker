@@ -9,7 +9,11 @@ export default function HabitForm() {
 
 
     async function handleSubmit(e) {
-        e.preventDefault();
+        if (!(name.length > 0) && !(description.length > 0)) {
+            console.log("empty field values");
+            return
+            //add error element
+        }
         let frequencyNum: int = 1
         if (frequency ==="weekly") {
             frequencyNum = 2;
@@ -17,14 +21,15 @@ export default function HabitForm() {
         else if (frequency === "monthly") {
             frequencyNum = 3;
         }
+        
         const habitData : json = {
             name: name,
             description: description,
             frequency: frequencyNum
         };
-        console.log(habitData);
+        
         const habit = await createHabit(habitData);
-        console.log(habit);
+        
     }
 
     return(
