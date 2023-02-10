@@ -28,8 +28,6 @@ class HabitController(Controller):
         #make DB call to get a list of the habits
         result = await async_session.scalars(select(Habit).order_by(Habit.id))
         habits: Habit | None = result.all()
-        if not habits:
-            raise HTTPException(detail=f'No habits created', status_code=HTTP_404_NOT_FOUND)
         return habits
 
     @patch(path="/{habit_id:int}")
